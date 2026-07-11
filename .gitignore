@@ -1,0 +1,29 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+data/
+output/
+*.tsv.gz
+*.csv
+
+# Environment variables / secrets (e.g. Postgres credentials)
+.env
+
+
+.DS_Store
+
+
+.vscode/clickstream-enwiki-2026-06.tsv
+*.tsv
+*.tsv.gz
+
+
+*.duckdb
