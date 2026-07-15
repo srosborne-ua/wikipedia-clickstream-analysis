@@ -24,7 +24,13 @@ con = duckdb.connect("clickstream.duckdb")
 
 # con.sql("SELECT curr, avg(n) OVER(PARTITION BY curr) FROM clickstream").show()
 
-con.sql("SELECT curr, AVG(n) AS avg_n, COUNT(*) AS num_referrers, SUM(n) AS total_n " \
+# con.sql("SELECT curr, AVG(n) AS avg_n, COUNT(*) AS num_referrers, SUM(n) AS total_n " \
+# "FROM clickstream " \
+# "GROUP BY curr " \
+# "ORDER BY total_n DESC").show
+
+#SPLITS INTO EXTERNAL VS OTHER WIKEPEDIA ARTICLE LINKS TO ARRIVE AT CURRENT SOURCE
+con.sql("SELECT CASE WHEN prev LIKE 'other%' THEN 'external' ELSE 'internal' END AS traffic_type, SUM(n) AS total_n, COUNT(*) AS row_count, " \
+"ROUND(100.0 * SUM(n) / SUM(SUM(n)) OVER (), 2) AS pct_of_total_n " \
 "FROM clickstream " \
-"GROUP BY curr " \
-"ORDER BY total_n DESC").show
+"GROUP BY CASE WHEN prev LIKE 'other%' THEN 'external' ELSE 'internal' END;").show()
