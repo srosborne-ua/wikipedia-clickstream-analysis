@@ -1,6 +1,6 @@
 import duckdb
 import pandas as pd
-
+import os
 
 con = duckdb.connect("clickstream.duckdb")
 
@@ -50,10 +50,10 @@ con = duckdb.connect("clickstream.duckdb")
 
 #per article total table
 
-con.sql("""CREATE OR REPLACE TEMP TABLE article_totals AS
-SELECT curr, SUM(n) AS total_n
-FROM clickstream
-GROUP BY curr;""")
+# con.sql("""CREATE OR REPLACE TEMP TABLE article_totals AS
+# SELECT curr, SUM(n) AS total_n
+# FROM clickstream
+# GROUP BY curr;""")
 
 #the querys use it:
 # con.sql("""WITH ranked AS (
@@ -85,4 +85,56 @@ GROUP BY curr;""")
 # FROM ranked
 # WHERE rank = 380075;""").show()
 
-con.sql("""SELECT COUNT(*) AS total_distinct_articles FROM article_totals;""").show()
+# con.sql("""SELECT COUNT(*) AS total_distinct_articles FROM article_totals;""").show()
+
+
+# # Phase 2 — per-article search/browse ratio
+# con.sql("""
+#     CREATE OR REPLACE TABLE per_article_stats AS
+#     SELECT
+#         curr,
+#         external_n,
+#         internal_n,
+#         external_n + internal_n AS total_n,
+#         ROUND(external_n * 1.0 / NULLIF(external_n + internal_n, 0), 4) AS external_share
+#     FROM (
+#         SELECT
+#             curr,
+#             SUM(CASE WHEN prev LIKE 'other%' AND prev != 'other-internal' THEN n ELSE 0 END) AS external_n,
+#             SUM(CASE WHEN type IN ('link', 'other') OR prev = 'other-internal' THEN n ELSE 0 END) AS internal_n
+#         FROM clickstream
+#         GROUP BY curr
+#         HAVING SUM(CASE WHEN prev LIKE 'other%' AND prev != 'other-internal' THEN n ELSE 0 END)
+#              + SUM(CASE WHEN type IN ('link', 'other') OR prev = 'other-internal' THEN n ELSE 0 END) >= 2113
+#     )
+# """)
+
+# # Phase 5 — hub/sink base table
+# con.sql("""
+#     CREATE OR REPLACE TABLE hub_sink_stats AS
+#     WITH inbound AS (
+#         SELECT curr AS article, SUM(n) AS inbound_n
+#         FROM clickstream
+#         WHERE type IN ('link', 'other')
+#         GROUP BY curr
+#     ),
+#     outbound AS (
+#         SELECT prev AS article, SUM(n) AS outbound_n
+#         FROM clickstream
+#         WHERE type IN ('link', 'other')
+#         GROUP BY prev
+#     )
+#     SELECT
+#         COALESCE(i.article, o.article) AS article,
+#         COALESCE(i.inbound_n, 0) AS inbound_n,
+#         COALESCE(o.outbound_n, 0) AS outbound_n,
+#         COALESCE(i.inbound_n, 0) - COALESCE(o.outbound_n, 0) AS inbound_minus_outbound
+#     FROM inbound i
+#     FULL OUTER JOIN outbound o ON i.article = o.article
+#     WHERE COALESCE(i.article, o.article) != 'Main_Page'
+# """)
+
+# con.sql("SHOW TABLES").show()
+# con.close()
+
+ 
