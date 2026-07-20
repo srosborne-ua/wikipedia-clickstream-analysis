@@ -9,6 +9,7 @@ PowerBi Vis:
 Description
 
 This project looks at how much of Wikipedia's traffic comes from search, social, and other external sources versus article-to-article browsing. It calculates a search vs. browse ratio for individual articles, identifying which pages are mostly found through search versus discovered by clicking around. It also flags high outbound traffic pages, which mostly send readers elsewhere, and low outbound traffic pages, which mostly receive readers and rarely lead anywhere else. Another focus is desire paths, article pairs with heavy traffic between them despite no hyperlink connecting them, which can point to missing links. Finally, the project examines the Pareto distribution of traffic, showing how concentrated it is across articles.
+Hubs and Sinks are calculated by the ratio of outflow traffic in proportion to inflow traffic, hubs being articles that have high rates of continued navigation and sinks being pages that are less likely to lead to continued browsing
 
 Stack
 
